@@ -7,24 +7,24 @@ NITEMS=15
 hist() {
 	[ -z "$1" ] && return
 	q="$1"
-	exists=$(cut -d. -f2- "$HISTORY" |grep -xc "$q")
-	if [ $exists -eq 0 ]; then
+	exists="$(cut -d. -f2- "$HISTORY" |grep -xc "$q")"
+	if [ "$exists" -eq 0 ]; then
 		echo "0.$q" >> "$HISTORY"
 	else
-		u=$(cut -d. -f2- "$HISTORY" |grep -x "$q")
-		n=$(echo 1 + $(grep "\.$u" "$HISTORY" |head -1 |cut -d. -f1) | bc)
+		u="$(cut -d. -f2- "$HISTORY" |grep -x "$q")"
+		n="$(echo 1 + $(grep "\.$u" "$HISTORY" |head -1 |cut -d. -f1) | bc)"
 		sed -i "/\.${u}$/ s/^[0-9]*\.\(.*\)$/${n}.\1/" "$HISTORY"
 	fi
 }
 
 getquery() {
-	cat $HISTORY |sort -rn | cut -d. -f2- |grep -i "$q" | dmenu -i -l $NITEMS
+	cat "$HISTORY" |sort -rn | cut -d. -f2- |grep -i "$q" | dmenu -i -l "$NITEMS"
 }
 
 goto() {
-	xid=$1
-	prop=$2
-	uri=$3
+	xid="$1"
+	prop="$2"
+	uri="$3"
 	xprop -id "$xid" -f "$prop" 8s -set "$prop" "$uri"
 }
 
@@ -33,14 +33,14 @@ urlencode() {
 }
 
 main() {
-	xid=$1
-	prop=$2
+	xid="$1"
+	prop="$2"
 	q="$(getquery)"
 	[ -z "$xid" -o -z "$prop" -o -z "$q" ] && exit 1
 
 	# If starts with '#', then don't put into history (and removes the '#')
 	if [ "$(echo $q |cut -b1)" = "#" ]; then
-		q=$(echo $q |cut -b2-)
+		q="$(echo "$q" |cut -b2-)"
 	else
 		hist "$q"
 	fi
@@ -48,15 +48,15 @@ main() {
 	# Note: this introduces an annoying bit of delay. Also URIs in history
 	# has already been check so can be skipped here.
 
-	search=$(curl -o /dev/null -s4m2 "$q"; echo $?)
-	if [ $search -ne 0 ]; then
+	search="$(curl -o /dev/null -s4m2 "$q"; echo $?)"
+	if [ "$search" -ne 0 ]; then
 		# enjoy !bangs
 		uri="https://duckduckgo.com/?q="
-		uri+=$(urlencode "$q")
+		uri+="$(urlencode "$q")"
 	else
 		uri="$q"
 	fi
-	goto $xid $prop $uri
+	goto "$xid" "$prop" "$uri"
 }
 
 main "$@"
