@@ -45,10 +45,9 @@ main() {
 		hist "$q"
 	fi
 
-	# Note: this introduces an annoying bit of delay. Also URIs in history
-	# has already been check so can be skipped here.
+	# XXX URIs in history has already been check so can be skipped here.
 
-	search="$(curl -o /dev/null -s4m2 "$q"; echo $?)"
+	search="$(host -4t A "$q" > /dev/null; echo $?)"
 	if [ "$search" -ne 0 ]; then
 		# enjoy !bangs
 		uri="https://duckduckgo.com/?q="
