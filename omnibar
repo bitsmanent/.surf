@@ -18,7 +18,7 @@ hist() {
 }
 
 getquery() {
-	cat "$HISTORY" |sort -rn | cut -d. -f2- |grep -i "$q" | dmenu -i -l "$NITEMS"
+	cat "$HISTORY" |sort -rn | cut -d. -f2- | dmenu -i -l "$NITEMS"
 }
 
 goto() {
