@@ -6,8 +6,8 @@ NITEMS=15
 hist() {
 	[ -z "$1" ] && return
 
-	u="$1"
-	q="$(echo "$q" |sed 's,\([/]\),\\\1,g')"
+	local -r u="$1"
+	local -r q="$(echo "$q" |sed 's,\([/]\),\\\1,g')"
 	n="$(sed -n "s/^\([0-9]*\) ${q}$/\1/p" "$HISTORY")"
 
 	if [ -z "$n" ]; then
@@ -23,9 +23,9 @@ getquery() {
 }
 
 goto() {
-	xid="$1"
-	prop="$2"
-	uri="$3"
+	local -r xid="$1"
+	local -r prop="$2"
+	local -r uri="$3"
 	xprop -id "$xid" -f "$prop" 8s -set "$prop" "$uri"
 }
 
@@ -34,9 +34,10 @@ urlencode() {
 }
 
 main() {
-	xid="$1"
-	prop="$2"
-	q="$(getquery)"
+	local -r xid="$1"
+	local -r prop="$2"
+	local q="$(getquery)"
+
 	[ -z "$xid" -o -z "$prop" -o -z "$q" ] && exit 1
 
 	# If starts with '#', then don't put into history (and removes the '#')
@@ -48,8 +49,9 @@ main() {
 
 	# XXX URIs in history has already been check so can be skipped here.
 
-	host="$(echo $q |cut -d/ -f3)"
-	search="$(host -4t A "$host" > /dev/null; echo $?)"
+	host="$(echo "$q" | sed 's,^\(.*://\|\)\([^/]*\).*,\2,')"
+	search="$(host -4t A "$host" |grep -q "has address"; echo $?)"
+
 	if [ "$search" -ne 0 ]; then
 		# enjoy !bangs
 		uri="https://duckduckgo.com/?q="
