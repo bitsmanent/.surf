@@ -7,20 +7,20 @@ NITEMS=15
 hist() {
 	[ -z "$1" ] && return
 	q="$1"
-	exists="$(cut -d. -f2- "$HISTORY" |grep -xc "$q")"
+	exists="$(cut -d' ' -f2- "$HISTORY" |grep -xc "$q")"
 	if [ "$exists" -eq 0 ]; then
-		echo "0.$q" >> "$HISTORY"
+		echo "0|${q}" >> "$HISTORY"
 	else
-		u="$(cut -d. -f2- "$HISTORY" |grep -x "$q")"
-		n="$(echo 1 + $(grep "\.$u" "$HISTORY" |head -1 |cut -d. -f1) | bc)"
-
-		u="$(echo "$u" |sed 's,/,\\/,g')"
-		sed -i "/\.${u}$/ s/^[0-9]*\.\(.*\)$/${n}.\1/" "$HISTORY"
+		u="$q"
+		q="$(echo "$q" |sed 's,\([/]\),\\\1,g')"
+		n="$(sed -n "s/^\([0-9]*\) ${q}$/\1/p" "$HISTORY")"
+		n="$(echo $n+1|bc)"
+		sed -i "s/^\([0-9]*\) ${q}/${n} ${q}/" "$HISTORY"
 	fi
 }
 
 getquery() {
-	cat "$HISTORY" |sort -rn | cut -d. -f2- | dmenu -i -l "$NITEMS"
+	cat "$HISTORY" |sort -rn | cut -d' ' -f2- | dmenu -i -l "$NITEMS"
 }
 
 goto() {
