@@ -36,10 +36,11 @@ urlencode() {
 main() {
 	local -r xid="$1"
 	local -r prop="$2"
-	local q="$(getquery)"
+	local q
 
 	[ -z "$xid" -o -z "$prop" ] && exit 1
 
+	q="$(getquery)"
 	q="$(echo "$q" | sed 's/^[ ]*//;s/[ ]*$//')" # trim
 	[ -z "$q" ] && exit 1
 
