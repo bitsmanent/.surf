@@ -7,7 +7,7 @@ hist() {
 	[ -z "$1" ] && return
 
 	local -r u="$1"
-	local -r q="$(echo "$q" |sed 's,\([/]\),\\\1,g')"
+	local -r q="$(echo "$u" |sed 's,\([/]\),\\\1,g')"
 	n="$(sed -n "s/^\([0-9]*\) ${q}$/\1/p" "$HISTORY")"
 
 	if [ -z "$n" ]; then
@@ -50,25 +50,32 @@ urlencode() {
 	printf %s "$1" | od -t x1 -An | tr -d '\n' | tr ' ' '%'
 }
 
-gotop() {
-	local -r xid="$1"
-	local -r prop="$2"
+target() {
 	local s u
-
-	[ -z "$xid" -o -z "$prop" ] && exit 1
 
 	s="$(prompt "$DMENULINES")"
 	s="$(echo "$s" | sed 's/^[ ]*//;s/[ ]*$//')" # trim
-	[ -z "$s" ] && exit 1
+	[ -z "$s" ] && return
 
 	hist "$s"
 	u="$(geturi "$s")"
+	echo "$u"
+}
 
-	goto "$xid" "$prop" "$u"
+surfgo() {
+	local -r xid="$1"
+	local -r prop="$2"
+	local -r tgt="$(target)"
+
+	[ -z "$xid" -o -z "$prop" -o -z "$tgt" ] && exit 1
+	goto "$xid" "$prop" "$tgt"
 }
 
 main() {
-	gotop "$1" "$2"
+	surfgo "$1" "$2"
+	#local -r cmd="$1"
+	#shift
+	#$cmd "$@"
 }
 
 main "$@"
