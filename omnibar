@@ -50,7 +50,7 @@ urlencode() {
 	printf %s "$1" | od -t x1 -An | tr -d '\n' | tr ' ' '%'
 }
 
-main() {
+gotop() {
 	local -r xid="$1"
 	local -r prop="$2"
 	local s u
@@ -65,6 +65,10 @@ main() {
 	u="$(geturi "$s")"
 
 	goto "$xid" "$prop" "$u"
+}
+
+main() {
+	gotop "$1" "$2"
 }
 
 main "$@"
