@@ -1,7 +1,7 @@
 #!/bin/bash
 
 HISTORY=~/.surf/history
-NITEMS=15
+DMENULINES=15
 
 hist() {
 	[ -z "$1" ] && return
@@ -18,8 +18,25 @@ hist() {
 	fi
 }
 
-getquery() {
-	cat "$HISTORY" |sort -rn | cut -d' ' -f2- | dmenu -i -l "$NITEMS"
+prompt() {
+	local -r nl="$1"
+	cat "$HISTORY" |sort -rn | cut -d' ' -f2- | dmenu -i -l "$nl"
+}
+
+geturi() {
+	local -r q="$1"
+	local -r host="$(echo "$q" | sed 's,^\(.*://\|\)\([^/]*\).*,\2,')"
+	local -r search="$(host -4t A "$host" |grep -q "has address"; echo $?)"
+	local uri
+
+	if [ "$search" -ne 0 ]; then
+		# enjoy !bangs
+		uri="https://duckduckgo.com/?q="
+		uri+="$(urlencode "$q")"
+	else
+		uri="$q"
+	fi
+	echo $uri
 }
 
 goto() {
@@ -36,29 +53,18 @@ urlencode() {
 main() {
 	local -r xid="$1"
 	local -r prop="$2"
-	local q
+	local s u
 
 	[ -z "$xid" -o -z "$prop" ] && exit 1
 
-	q="$(getquery)"
-	q="$(echo "$q" | sed 's/^[ ]*//;s/[ ]*$//')" # trim
-	[ -z "$q" ] && exit 1
+	s="$(prompt "$DMENULINES")"
+	s="$(echo "$s" | sed 's/^[ ]*//;s/[ ]*$//')" # trim
+	[ -z "$s" ] && exit 1
 
-	hist "$q"
+	hist "$s"
+	u="$(geturi "$s")"
 
-	# XXX URIs in history has already been check so can be skipped here.
-
-	host="$(echo "$q" | sed 's,^\(.*://\|\)\([^/]*\).*,\2,')"
-	search="$(host -4t A "$host" |grep -q "has address"; echo $?)"
-	if [ "$search" -ne 0 ]; then
-		# enjoy !bangs
-		uri="https://duckduckgo.com/?q="
-		uri+="$(urlencode "$q")"
-	else
-		uri="$q"
-	fi
-
-	goto "$xid" "$prop" "$uri"
+	goto "$xid" "$prop" "$u"
 }
 
 main "$@"
