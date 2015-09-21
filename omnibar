@@ -3,19 +3,18 @@
 HISTORY=~/.surf/history
 NITEMS=15
 
-# XXX needs some clean up
 hist() {
 	[ -z "$1" ] && return
-	q="$1"
-	exists="$(cut -d' ' -f2- "$HISTORY" |grep -xc "$q")"
-	if [ "$exists" -eq 0 ]; then
-		echo "0|${q}" >> "$HISTORY"
+
+	u="$1"
+	q="$(echo "$q" |sed 's,\([/]\),\\\1,g')"
+	n="$(sed -n "s/^\([0-9]*\) ${q}$/\1/p" "$HISTORY")"
+
+	if [ -z "$n" ]; then
+		echo "1 ${q}" >> "$HISTORY"
 	else
-		u="$q"
-		q="$(echo "$q" |sed 's,\([/]\),\\\1,g')"
-		n="$(sed -n "s/^\([0-9]*\) ${q}$/\1/p" "$HISTORY")"
 		n="$(echo $n+1|bc)"
-		sed -i "s/^\([0-9]*\) ${q}/${n} ${q}/" "$HISTORY"
+		sed -i "s/^\([0-9]*\) ${q}$/${n} ${q}/" "$HISTORY"
 	fi
 }
 
