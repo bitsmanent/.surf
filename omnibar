@@ -38,20 +38,17 @@ main() {
 	local -r prop="$2"
 	local q="$(getquery)"
 
-	[ -z "$xid" -o -z "$prop" -o -z "$q" ] && exit 1
+	[ -z "$xid" -o -z "$prop" ] && exit 1
 
-	# If starts with '#', then don't put into history (and removes the '#')
-	if [ "$(echo $q |cut -b1)" = "#" ]; then
-		q="$(echo "$q" |cut -b2-)"
-	else
-		hist "$q"
-	fi
+	q="$(echo "$q" | sed 's/^[ ]*//;s/[ ]*$//')" # trim
+	[ -z "$q" ] && exit 1
+
+	hist "$q"
 
 	# XXX URIs in history has already been check so can be skipped here.
 
 	host="$(echo "$q" | sed 's,^\(.*://\|\)\([^/]*\).*,\2,')"
 	search="$(host -4t A "$host" |grep -q "has address"; echo $?)"
-
 	if [ "$search" -ne 0 ]; then
 		# enjoy !bangs
 		uri="https://duckduckgo.com/?q="
@@ -59,6 +56,7 @@ main() {
 	else
 		uri="$q"
 	fi
+
 	goto "$xid" "$prop" "$uri"
 }
 
