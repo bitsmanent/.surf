@@ -13,6 +13,8 @@ hist() {
 	else
 		u="$(cut -d. -f2- "$HISTORY" |grep -x "$q")"
 		n="$(echo 1 + $(grep "\.$u" "$HISTORY" |head -1 |cut -d. -f1) | bc)"
+
+		u="$(echo "$u" |sed 's,/,\\/,g')"
 		sed -i "/\.${u}$/ s/^[0-9]*\.\(.*\)$/${n}.\1/" "$HISTORY"
 	fi
 }
@@ -47,7 +49,8 @@ main() {
 
 	# XXX URIs in history has already been check so can be skipped here.
 
-	search="$(host -4t A "$q" > /dev/null; echo $?)"
+	host="$(echo $q |cut -d/ -f3)"
+	search="$(host -4t A "$host" > /dev/null; echo $?)"
 	if [ "$search" -ne 0 ]; then
 		# enjoy !bangs
 		uri="https://duckduckgo.com/?q="
