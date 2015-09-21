@@ -25,8 +25,8 @@ prompt() {
 
 geturi() {
 	local -r q="$1"
-	local -r host="$(echo "$q" | sed 's,^\(.*://\|\)\([^/]*\).*,\2,')"
-	local -r search="$(host -4t A "$host" |grep -q "has address"; echo $?)"
+	local -r host="$(echo "$q" | sed 's,^\(.*://\|\)\([^/:]*\).*,\2,')"
+	local -r search="$(nc -4dw 1 "$host" 80 2> /dev/null; echo $?)"
 	local uri
 
 	if [ "$search" -ne 0 ]; then
