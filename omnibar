@@ -11,7 +11,7 @@ hist() {
 	n="$(sed -n "s/^\([0-9]*\) ${q}$/\1/p" "$HISTORY")"
 
 	if [ -z "$n" ]; then
-		echo "1 ${q}" >> "$HISTORY"
+		echo "1 ${u}" >> "$HISTORY"
 	else
 		n="$(echo $n+1|bc)"
 		sed -i "s/^\([0-9]*\) ${q}$/${n} ${q}/" "$HISTORY"
