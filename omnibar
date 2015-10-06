@@ -72,10 +72,9 @@ surfgo() {
 }
 
 main() {
-	surfgo "$1" "$2"
-	#local -r cmd="$1"
-	#shift
-	#$cmd "$@"
+	local -r cmd="$1"
+	shift
+	$cmd "$@"
 }
 
 main "$@"
