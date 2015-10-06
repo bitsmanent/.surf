@@ -1,74 +1,61 @@
 #!/bin/bash
 
-HISTORY=~/.surf/history
-DMENULINES=15
+declare -g HISTORY=~/.surf/history
+declare -g NITEMS=5
 
-hist() {
+urlencode() {
+	printf %s "$1" | od -t x1 -An | tr -d '\n' | tr ' ' '%'
+}
+
+trim() {
+	echo "$1" | sed 's/^[ ]*//;s/[ ]*$//'
+}
+
+addhist() {
 	[ -z "$1" ] && return
 
 	local -r u="$1"
-	local -r q="$(echo "$u" |sed 's,\([/]\),\\\1,g')"
-	n="$(sed -n "s/^\([0-9]*\) ${q}$/\1/p" "$HISTORY")"
+	local -r s="$(echo "$u" |sed 's,\([/]\),\\\1,g')"
+	n="$(sed -n "s/^\([0-9]*\) ${s}$/\1/p" "$HISTORY")"
 
 	if [ -z "$n" ]; then
 		echo "1 ${u}" >> "$HISTORY"
 	else
 		n="$(echo $n+1|bc)"
-		sed -i "s/^\([0-9]*\) ${q}$/${n} ${q}/" "$HISTORY"
+		sed -i "s/^\([0-9]*\) ${s}$/${n} ${s}/" "$HISTORY"
 	fi
 }
 
-prompt() {
-	local -r nl="$1"
-	cat "$HISTORY" |sort -rn | cut -d' ' -f2- | dmenu -i -l "$nl"
-}
-
 geturi() {
-	local -r q="$1"
-	local -r host="$(echo "$q" | sed 's,^\(.*://\|\)\([^/:]*\).*,\2,')"
+	local -r s="$1"
+	local -r host="$(echo "$s" | sed 's,^\(.*://\|\)\([^/:]*\).*,\2,')"
 	local -r search="$(nc -4dw 1 "$host" 80 2> /dev/null; echo $?)"
 	local uri
 
 	if [ "$search" -ne 0 ]; then
 		# enjoy !bangs
 		uri="https://duckduckgo.com/?q="
-		uri+="$(urlencode "$q")"
+		uri+="$(urlencode "$s")"
 	else
-		uri="$q"
+		uri="$s"
 	fi
-	echo $uri
+	echo "$uri"
 }
 
 goto() {
 	local -r xid="$1"
 	local -r prop="$2"
-	local -r uri="$3"
-	xprop -id "$xid" -f "$prop" 8s -set "$prop" "$uri"
-}
+	local uri s
 
-urlencode() {
-	printf %s "$1" | od -t x1 -An | tr -d '\n' | tr ' ' '%'
-}
-
-target() {
-	local s u
-
-	s="$(prompt "$DMENULINES")"
-	s="$(echo "$s" | sed 's/^[ ]*//;s/[ ]*$//')" # trim
+	s="$(cat "$HISTORY" |sort -rn | cut -d' ' -f2- | dmenu -i -l "$NITEMS")"
+	s="$(trim "$s")"
 	[ -z "$s" ] && return
 
-	hist "$s"
-	u="$(geturi "$s")"
-	echo "$u"
-}
+	addhist "$s"
+	uri="$(geturi "$s")"
 
-surfgo() {
-	local -r xid="$1"
-	local -r prop="$2"
-	local -r tgt="$(target)"
-
-	[ -z "$xid" -o -z "$prop" -o -z "$tgt" ] && exit 1
-	goto "$xid" "$prop" "$tgt"
+	[ -z "$xid" -o -z "$prop" -o -z "$uri" ] && exit 1
+	xprop -id "$xid" -f "$prop" 8s -set "$prop" "$uri"
 }
 
 main() {
