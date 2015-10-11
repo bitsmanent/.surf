@@ -1,6 +1,6 @@
 #!/bin/bash
 
-declare -g HISTORY=~/.surf/history
+declare -g HISTFN=~/.surf/history
 declare -g NITEMS=5
 
 urlencode() {
@@ -15,14 +15,13 @@ addhist() {
 	[ -z "$1" ] && return
 
 	local -r u="$1"
-	local -r s="$(echo "$u" |sed 's,\([/]\),\\\1,g')"
-	n="$(sed -n "s/^\([0-9]*\) ${s}$/\1/p" "$HISTORY")"
+	local n="$(sed -n "s|^\([0-9]*\) ${u}$|\1|p" "$HISTFN")"
 
 	if [ -z "$n" ]; then
-		echo "1 ${u}" >> "$HISTORY"
+		echo "1 ${u}" >> "$HISTFN"
 	else
 		n="$(echo $n+1|bc)"
-		sed -i "s/^\([0-9]*\) ${s}$/${n} ${s}/" "$HISTORY"
+		sed -i "s|^\([0-9]*\) ${u}$|${n} ${s}|" "$HISTFN"
 	fi
 }
 
@@ -47,7 +46,7 @@ goto() {
 	local -r prop="$2"
 	local uri s
 
-	s="$(cat "$HISTORY" |sort -rn | cut -d' ' -f2- | dmenu -i -l "$NITEMS")"
+	s="$(cat "$HISTFN" |sort -rn | cut -d' ' -f2- | dmenu -i -l "$NITEMS")"
 	s="$(trim "$s")"
 	[ -z "$s" ] && return
 
