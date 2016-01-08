@@ -21,7 +21,8 @@ addhist() {
 		echo "1 ${u}" >> "$HISTFN"
 	else
 		n="$(echo $n+1|bc)"
-		sed -i "s|^\([0-9]*\) ${u}$|${n} ${u}|" "$HISTFN"
+		un="$(echo "$u" |sed 's/&/\\&/g')"
+		sed -i "s|^\([0-9]*\) ${u}$|${n} ${un}|" "$HISTFN"
 	fi
 }
 
