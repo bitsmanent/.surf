@@ -55,6 +55,10 @@ function setHighlight(elem, is_active) {
 
 function setHintRules() {
     var ss = document.styleSheets[0];
+    if(!ss) {
+    	document.head.appendChild(document.createElement('style'));
+        ss = document.styleSheets[0];
+    }
     ss.insertRule('a[highlight=hint_elem] {background-color: yellow}', 0);
     ss.insertRule('a[highlight=hint_active] {background-color: lime}', 0);
 }
